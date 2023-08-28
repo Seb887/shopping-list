@@ -2,6 +2,9 @@ const addItemBtn = document.querySelector('#btn');
 const itemForm = document.querySelector('#item-form');
 const itemInput = document.getElementById('item-input');
 const itemList = document.querySelector('#item-list');
+const removeBtn = itemList.querySelectorAll('button');
+const clearBtn = document.getElementById('clear');
+const itemFilter = document.getElementById('filter');
 
 function onAddItemSubmit(e) {
   e.preventDefault();
@@ -10,9 +13,12 @@ function onAddItemSubmit(e) {
 
   if (newItem === '') {
     alert('Please insert new Item!');
+    return; // Funktion wird hier sofort gestoppt
   }
 
   addItemToDOM(newItem);
+
+  checkUI();
 
   itemInput.value = '';
 }
@@ -30,6 +36,39 @@ function addItemToDOM(item) {
   button.appendChild(icon);
   li.appendChild(button);
   itemList.appendChild(li);
+
+  // checkfilter();
 }
 
+function removeItem(e) {
+  if (e.target.parentElement.classList.contains('remove-item')) {
+    const liElement = e.target.parentElement.parentElement;
+    liElement.remove();
+    // checkUI();
+  }
+
+  checkUI();
+}
+
+function clearAll() {
+  while (itemList.firstChild) {
+    itemList.firstChild.remove();
+  }
+
+  checkUI();
+}
+
+function checkUI() {
+  if (itemList.firstChild === null) {
+    clearBtn.style.display = 'none';
+    itemFilter.style.display = 'none';
+  } else {
+    clearBtn.style.display = 'block';
+    itemFilter.style.display = 'block';
+  }
+}
+
+// Events
 itemForm.addEventListener('submit', onAddItemSubmit);
+itemList.addEventListener('click', removeItem);
+clearBtn.addEventListener('click', clearAll);
