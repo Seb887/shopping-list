@@ -6,15 +6,24 @@ const removeBtn = itemList.querySelectorAll('button');
 const clearBtn = document.getElementById('clear');
 const itemFilter = document.getElementById('filter');
 
+function displayItemsAfterReload() {
+  let itemsFromStorage = getItemsFromStorage();
+  itemsFromStorage.forEach((item) => addItemToDOM(item));
+
+  checkUI();
+}
+
 function onAddItemSubmit(e) {
   e.preventDefault();
 
-  const newItem = itemInput.value;
+  let newItem = itemInput.value;
 
   if (newItem === '') {
     alert('Please insert new Item!');
-    return; // Funktion wird hier sofort gestoppt
+    return; // Funktion wird bei einem "return" sofort gestoppt
   }
+
+  newItem = firstLetterToUpperCase(itemInput.value);
 
   addItemToDOM(newItem);
 
@@ -23,6 +32,15 @@ function onAddItemSubmit(e) {
   checkUI();
 
   itemInput.value = '';
+}
+
+// Set first letter to upper case and the rest to lower case
+function firstLetterToUpperCase(string) {
+  if (string === undefined) {
+    return;
+  } else {
+    return string[0].toUpperCase() + string.slice(1).toLowerCase();
+  }
 }
 
 function addItemToDOM(item) {
@@ -39,23 +57,27 @@ function addItemToDOM(item) {
   li.appendChild(button);
   itemList.appendChild(li);
 
-  checkIfItemExists();
+  // checkIfItemExists();
 }
 
 function addToLocalStorage(item) {
   let itemsFromStorage = getItemsFromStorage();
 
-  if (localStorage.getItem('items') === null) {
-    itemsFromStorage = [];
-  } else {
-    localStorage.setItem('items', JSON.stringify(itemsFromStorage));
-  }
-
   itemsFromStorage.push(item);
+
+  localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 }
 
 function getItemsFromStorage() {
-  const itemsFromStorage = localStorage.getItem('items');
+  let itemsFromStorage;
+
+  if (localStorage.getItem('items') === null) {
+    itemsFromStorage = [];
+  } else {
+    itemsFromStorage = JSON.parse(localStorage.getItem('items'));
+  }
+
+  return itemsFromStorage;
 }
 
 function onClickItem(e) {
@@ -70,6 +92,7 @@ function removeItem(item) {
   if (confirm('Are you sure?')) {
     // Remove item from DOM
     item.remove();
+    localStorage.removeItem(item);
   }
 
   checkUI();
@@ -79,6 +102,8 @@ function clearAll() {
   while (itemList.firstChild) {
     itemList.firstChild.remove();
   }
+
+  localStorage.clear();
 
   checkUI();
 }
@@ -100,23 +125,24 @@ function filterItems() {
   });
 }
 
-function checkIfItemExists() {
-  const items = itemList.querySelectorAll('li');
+// FIXME:
+// function checkIfItemExists() {
+//   const items = getItemsFromStorage();
 
-  items.forEach((item) => {
-    const itemName = item.firstChild.textContent.toLowerCase();
+//   items.forEach((item) => {
+//     const itemName = item.firstChild.textContent.toLowerCase();
 
-    // indexof sucht im String nach dem was eingeben wird,
-    // wenn nicht vorhanden, wird -1 zurückgegeben
-    if (itemName.indexOf(itemInput.value.toLowerCase()) === -1) {
-      alert('Item already exists!');
-      itemInput.value = '';
-      return;
-    }
+//     // indexof sucht im String nach dem was eingeben wird,
+//     // wenn nicht vorhanden, wird -1 zurückgegeben
+//     if (itemName.indexOf(itemInput.value.toLowerCase()) === -1) {
+//       alert('Item already exists!');
+//       itemInput.value = '';
+//       return;
+//     }
 
-    // itemInput.value = '';
-  });
-}
+//     // itemInput.value = '';
+//   });
+// }
 
 function checkUI() {
   itemInput.value = '';
@@ -137,3 +163,5 @@ itemForm.addEventListener('submit', onAddItemSubmit);
 itemList.addEventListener('click', onClickItem);
 clearBtn.addEventListener('click', clearAll);
 itemFilter.addEventListener('input', filterItems);
+document.addEventListener('DOMContentLoaded', displayItemsAfterReload);
+// console.log('getItemsFormStorage', getItemsFromStorage());
